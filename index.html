@@ -1,0 +1,23 @@
+<html>
+<head>
+    <title>Mel2Mel</title>
+    <link rel="stylesheet" type="text/css" href="style.css">
+</head>
+<body>
+    <div id="content">
+        <div id="title"><p><b>Mel2Mel</b><br><br><span id="midi-message">Drop a MIDI file here</span></p><input type="file" id="input" accept=".mid"></div>
+        <canvas id="melody" width="1250" height="352"></canvas>
+        <div class="clear"></div>
+        <div id="timbre"></div>
+        <canvas id="mel" width="1250" height="80"></canvas>
+        <div id="loader"></div>
+        <div class="clear"></div>
+        <div id="status">Loading ...</div>
+        <div id="audio"></div>
+    </div>
+    <script src="MidiConvert.js"></script>
+    <script src="tensorflow.js"></script>
+    <script src="globals.js"></script>
+    <script src="mel2mel.js"></script>
+</body>
+</html>

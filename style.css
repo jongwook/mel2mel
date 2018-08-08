@@ -1,0 +1,162 @@
+body {
+    margin: 0;
+    background: hsl(212, 62%, 96%);
+    display: grid;
+    height: 100vh;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+canvas {
+    image-rendering: optimizeSpeed;             /* Older versions of FF          */
+    image-rendering: -moz-crisp-edges;          /* FF 6.0+                       */
+    image-rendering: -webkit-optimize-contrast; /* Safari                        */
+    image-rendering: -o-crisp-edges;            /* OS X & Windows Opera (12.02+) */
+    image-rendering: pixelated;                 /* Awesome future-browsers       */
+    -ms-interpolation-mode: nearest-neighbor;   /* IE                            */
+}
+
+#content {
+    width: 1600px;
+    margin: auto;
+}
+
+#title {
+    position: relative;
+    border: 1px dashed hsl(212, 80%, 20%);
+    float: left;
+    width: 320px;
+    height: 352px;
+    color: hsl(212, 80%, 20%);
+    font-size: 14pt;
+    font-family: sans-serif;
+    text-align: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#title.hover {
+    background-color: hsl(212, 62%, 20%);
+    color: hsl(212, 62%, 96%);
+}
+
+#title b {
+    font-size: 24pt;
+}
+
+#title input {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    left: 0;
+    top: 0;
+}
+
+#melody {
+    width: 1250px;
+    height: 352px;
+    background: hsl(212, 0%, 90%);
+    float: right;
+    transform: rotate(180deg) scaleX(-1);
+}
+
+.clear {
+    clear: both;
+    height: 30px;
+}
+
+#timbre {
+    width: 320px;
+    height: 320px;
+    background: hsl(212, 62%, 70%);
+    float: left;
+}
+
+#mel {
+    width: 1250px;
+    height: 320px;
+    background: hsl(212, 0%, 80%);
+    float: right;
+    transform: rotate(180deg) scaleX(-1);
+}
+
+#status {
+    width: 320px;
+    height: 30px;
+    line-height: 30px;
+    color: white;
+    font-family: monospace;
+    padding: 0 10px 0 10px;
+    background: hsl(212, 62%, 20%);
+    float: left;
+    
+}
+
+#audio {
+    width: 1250px;
+    height: 30px;
+    background: hsl(212, 62%, 90%);
+    float: right;
+}
+
+#loader,
+#loader:before,
+#loader:after {
+  border-radius: 50%;
+  width: 2.5em;
+  height: 2.5em;
+  -webkit-animation-fill-mode: both;
+  animation-fill-mode: both;
+  -webkit-animation: load7 1.8s infinite ease-in-out;
+  animation: load7 1.8s infinite ease-in-out;
+}
+#loader {
+  color: #ffffff;
+  font-size: 10px;
+  margin: 120px 625px auto auto;
+  position: relative;
+  text-indent: -9999em;
+  -webkit-transform: translateZ(0);
+  -ms-transform: translateZ(0);
+  transform: translateZ(0);
+  -webkit-animation-delay: -0.16s;
+  animation-delay: -0.16s;
+}
+#loader:before,
+#loader:after {
+  content: '';
+  position: absolute;
+  top: 0;
+}
+#loader:before {
+  left: -3.5em;
+  -webkit-animation-delay: -0.32s;
+  animation-delay: -0.32s;
+}
+#loader:after {
+  left: 3.5em;
+}
+@-webkit-keyframes load7 {
+  0%,
+  80%,
+  100% {
+    box-shadow: 0 2.5em 0 -1.3em;
+  }
+  40% {
+    box-shadow: 0 2.5em 0 0;
+  }
+}
+@keyframes load7 {
+  0%,
+  80%,
+  100% {
+    box-shadow: 0 2.5em 0 -1.3em;
+  }
+  40% {
+    box-shadow: 0 2.5em 0 0;
+  }
+}
