@@ -81,7 +81,7 @@ canvas {
 #timbre {
     width: 320px;
     height: 320px;
-    background: hsl(212, 62%, 70%);
+    background: hsl(212, 62%, 90%);
     float: left;
 
     cursor: crosshair;
@@ -169,4 +169,19 @@ canvas {
   40% {
     box-shadow: 0 2.5em 0 0;
   }
+}
+
+#credit {
+    padding: 20px;
+    text-align: center;
+    color: hsl(212, 62%, 70%);
+    font-size: 8pt;
+}
+
+#credit a {
+    text-decoration: none;
+    color: hsl(212, 62%, 60%);
+}
+#credit a:hover {
+    text-decoration: underline;
 }
