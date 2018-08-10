@@ -13,6 +13,7 @@ body {
 }
 
 canvas {
+    transform: rotate(180deg) scaleX(-1);
     image-rendering: optimizeSpeed;             /* Older versions of FF          */
     image-rendering: -moz-crisp-edges;          /* FF 6.0+                       */
     image-rendering: -webkit-optimize-contrast; /* Safari                        */
@@ -70,7 +71,6 @@ canvas {
     height: 352px;
     background: hsl(212, 0%, 90%);
     float: right;
-    transform: rotate(180deg) scaleX(-1);
 }
 
 .clear {
@@ -92,7 +92,6 @@ canvas {
     height: 320px;
     background: hsl(212, 0%, 80%);
     float: right;
-    transform: rotate(180deg) scaleX(-1);
 }
 
 #status {
