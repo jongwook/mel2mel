@@ -46,6 +46,7 @@ mel2mel = (function(self) {
         image.src = uri;
         return image;
     });
+    self.notes = [];
 
     var timbreCoord = [0.5, 0.5];
 
@@ -137,6 +138,8 @@ mel2mel = (function(self) {
         const tracks = midi.tracks;
         const ctx = melody.getContext('2d');
         ctx.clearRect(0, 0, melody.width, melody.height);
+
+        self.notes = [];
         
         for (var i = 0; i < tracks.length; i++) {
             const track = tracks[i];
@@ -156,6 +159,8 @@ mel2mel = (function(self) {
                     ctx.fillRect(left, pitch * 4, right - left, 4);
                     ctx.fillStyle = 'hsl(212, 62%, 40%)';
                     ctx.fillRect(left, pitch * 4, 4, 4);
+
+                    self.notes.push([note.time, Math.min(note.duration, MAX_LENGTH - note.time), note.midi, note.velocity]);
                 }
             }
         }
@@ -217,7 +222,7 @@ mel2mel = (function(self) {
                 var X = tf.dot(self.embeddings.transpose(), self.embeddings);
                 var rot = tf.eye(2);
                 for (var i = 0; i < 30; i++) {
-                    QR = tf.qr(X);
+                    QR = tf.linalg.qr(X);
                     rot = tf.dot(rot, QR[0]);
                     X = tf.dot(QR[1], QR[0]);
                 }
