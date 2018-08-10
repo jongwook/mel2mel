@@ -1,10 +1,12 @@
-mel2mel = (function() {
+mel2mel = (function(global) {
+    const content = document.getElementById('content');
     const title = document.getElementById('title');
     const input = document.getElementById('input');
     const midiMessage = document.getElementById('midi-message');
     const melody = document.getElementById('melody');
     const mel = document.getElementById('mel');
     const status = document.getElementById('status');
+    const initialLoader = document.getElementById('initial-loader');
     const loader = document.getElementById('loader');
 
     const MAX_LENGTH = 10;
@@ -13,9 +15,27 @@ mel2mel = (function() {
     const STEP_RATE = SAMPLE_RATE / STEP_SIZE;
     const MAX_STEPS = Math.floor(MAX_LENGTH * SAMPLE_RATE / STEP_SIZE);
     const midiData = new Float32Array(88*2 * MAX_STEPS);
+    const instruments = [
+        'Grand Piano', 
+        'Electric Piano',
+        'Vibraphone',
+        'Church Organ',
+        'Acoustic Guitar',
+        'Pizzicato Strings',
+        'Orchestral Harp',
+        'String Ensemble',
+        'Trumpet',
+        'Synth Lead'
+    ];
+
+    var timbre = [0, 0];
 
     function setStatus(text) {
         status.textContent = text;
+    }
+
+    function runModel(midiData) {
+        
     }
 
     function update() {
@@ -32,15 +52,17 @@ mel2mel = (function() {
             tf.tidy(() => {
                 var input = tf.tensor3d(midiData, [1, 88*2, MAX_STEPS]);
                 var transposed = input.transpose([0, 2, 1]);
-                var output = window.model.predict([transposed, tf.tensor2d([[5]])]);
-                var scaled = tf.mul(tf.add(output, 10), 256 / 12);
-                var image = window.colormap.predict(scaled.reshape([MAX_STEPS, 80]).transpose());
+                var output = global.model.predict([transposed, tf.tensor2d([[5]])]);
+                var scaled = tf.mul(tf.add(output, 10), 256 / 11);
+                var image = global.colormap.predict(scaled.reshape([MAX_STEPS, 80]).transpose());
                 var buffer = image.dataSync();
                 var clamped = Uint8ClampedArray.from(buffer);
                 var imageData = new ImageData(clamped, mel.width, mel.height);
                 mel.getContext('2d').putImageData(imageData, 0, 0);
                 setStatus('Complete');
+                initialLoader.style.display = 'none';
                 loader.style.display = 'none';
+                content.style.display = 'block';
             })
         }, 10);
     }
@@ -110,10 +132,40 @@ mel2mel = (function() {
     async function init() {
         try {
             setStatus('Loading TF model ...');
-            window.model = await tf.loadModel('model/model.json');
+            global.model = await tf.loadModel('model/model.json');
+            global.layers = {}
+            for (i = 0; i < global.model.layers.length; i++) {
+                if (global.model.layers[i].weights.length > 0) {
+                    global.layers[global.model.layers[i].name] = global.model.layers[i];
+                }
+            }
+            global.embeddings = layers.instrument_embedding.embeddings.val;
+            tf.tidy(() => {
+                // poor man's PCA using QR implementation
+                X = tf.dot(global.embeddings.transpose(), global.embeddings);
+                rot = tf.eye(2);
+                for (var i = 0; i < 30; i++) {
+                    QR = tf.qr(X);
+                    rot = tf.dot(rot, QR[0]);
+                    X = tf.dot(QR[1], QR[0]);
+                }
+                var coords = tf.dot(rot, global.embeddings.transpose()).transpose().dataSync()
+                global.coords = []
+                global.minX = global.maxX = coords[0];
+                global.minY = global.maxY = coords[1];
+                for (var i = 0; i < instruments.length; i++) {
+                    var x = coords[i * 2];
+                    var y = coords[i * 2 + 1];
+                    global.coords.push([x, y]);
+                    if (x < global.minX) global.minX = x;
+                    if (x > global.maxX) global.maxX = x;
+                    if (y < global.minY) global.minY = y;
+                    if (y > global.maxY) global.maxY = y;
+                }
+
+            });
             setStatus('Loading colormap ...');
-            window.colormap = await tf.loadModel('colormaps/viridis/model.json');
-            setStatus('Warming up ...');
+            global.colormap = await tf.loadModel('colormaps/viridis/model.json');
             loadMidi('midi/mendelssohn-wedding-march.mid');
         } catch (e) {
             setStatus('Error loading model');
@@ -122,11 +174,4 @@ mel2mel = (function() {
     }
 
     init();
-
-    return {
-        init: init,
-        setStatus: setStatus,
-        midiData: midiData,
-        update: update
-    }
-})();
+})(window);

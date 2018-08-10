@@ -3,6 +3,9 @@ body {
     background: hsl(212, 62%, 96%);
     display: grid;
     height: 100vh;
+
+    font-family: sans-serif;
+    color: hsl(212, 80%, 20%);
 }
 
 * {
@@ -18,9 +21,17 @@ canvas {
     -ms-interpolation-mode: nearest-neighbor;   /* IE                            */
 }
 
+#initial-loader {
+    text-align: center;
+    margin: auto;
+    width: 400px;
+    height: 200px;
+}
+
 #content {
     width: 1600px;
     margin: auto;
+    display: none;
 }
 
 #title {
@@ -29,9 +40,7 @@ canvas {
     float: left;
     width: 320px;
     height: 352px;
-    color: hsl(212, 80%, 20%);
     font-size: 14pt;
-    font-family: sans-serif;
     text-align: center;
     display: flex;
     justify-content: center;
@@ -74,6 +83,8 @@ canvas {
     height: 320px;
     background: hsl(212, 62%, 70%);
     float: left;
+
+    cursor: crosshair;
 }
 
 #mel {
