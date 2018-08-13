@@ -1,6 +1,6 @@
 // Main controller for playing chunks enqueued for decoding.
 const AudioStreamPlayer = (function() {
-    const worker = new Worker('/worker-decoder.js'),
+    const worker = new Worker('worker-decoder.js'),
           audioCtx = new (window.AudioContext || window.webkitAudioContext)(),
           audioSrcNodes = []; // Used to fix Safari Bug https://github.com/AnthumChris/fetch-stream-audio/issues/1
 
