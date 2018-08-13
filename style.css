@@ -109,8 +109,29 @@ canvas {
 #audio {
     width: 1250px;
     height: 30px;
-    background: hsl(212, 62%, 90%);
     float: right;
+    color: rgba(0, 0, 0, 0);
+    background: hsl(212, 62%, 88%);
+    border-left-color: hsl(212, 62%, 59%);
+    border-right-color: hsl(212, 22%, 90%);
+    border-right-width: 1250px;
+    border-left-width: 0px;
+    border-left-style: solid;
+    border-right-style: solid;
+}
+
+#audio.ready {
+    color: hsl(212, 80%, 20%);
+}
+
+#audio:before {
+    content: '▶';
+    line-height: 30px;
+    width: 30px;
+    height: 30px;
+    text-align: center;
+    display: block;
+    transform: scaleY(1.2);
 }
 
 #loader,

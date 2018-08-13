@@ -16,6 +16,7 @@ mel2mel = (function(self) {
     const status = document.getElementById('status');
     const initialLoader = document.getElementById('initial-loader');
     const loader = document.getElementById('loader');
+    const audio = document.getElementById('audio');
 
     self.midiData = new Float32Array(88*2 * MAX_STEPS);
     self.instruments = [
@@ -53,6 +54,12 @@ mel2mel = (function(self) {
     function setStatus(text) {
         status.textContent = text;
     }
+
+    function setProgress(progress) {
+        audio.style.borderLeftWidth = 1250 * progress;
+    }
+
+    AudioStreamPlayer.setCallbacks(setStatus, setProgress);
 
     function runModel(salience) {
         const coord = tf.tensor1d([
@@ -113,12 +120,15 @@ mel2mel = (function(self) {
         setStatus('Predicting Mel spectrogram ...');
         mel.getContext('2d').clearRect(0, 0, mel.width, mel.height);
         loader.style.display = 'block';
+        audio.classList.remove('ready');
+        audio.style.borderRightWidth = 1250;
         
         setTimeout(() => {
             tf.tidy(() => {
                 const input = tf.tensor3d(self.midiData, [1, 88*2, MAX_STEPS]);
                 const transposed = input.transpose([0, 2, 1]);
                 const output = runModel(transposed);
+                self.output = output.dataSync();
                 const scaled = tf.mul(tf.add(output, 10), 256 / 11);
                 const image = self.colormap.predict(scaled.reshape([MAX_STEPS, 80]).transpose());
                 const buffer = image.dataSync();
@@ -129,6 +139,7 @@ mel2mel = (function(self) {
                 initialLoader.style.display = 'none';
                 loader.style.display = 'none';
                 content.style.display = 'block';
+                audio.classList.add('ready');
             })
         }, 10);
     }
@@ -205,6 +216,74 @@ mel2mel = (function(self) {
         updateTimbre();
         updateMel();
     });
+
+    function playResponseAsStream(response, readBufferSize) {
+        if (!response.ok) throw Error(response.status+' '+response.statusText)
+        if (!response.body) throw Error('ReadableStream not yet supported in this browser - <a href="https://developer.mozilla.org/en-US/docs/Web/API/Body/body#Browser_Compatibility">browser compatibility</a>')
+
+        const reader = response.body.getReader(),
+              contentLength = response.headers.get('content-length'), // requires CORS access-control-expose-headers: content-length
+              bytesTotal = contentLength? parseInt(contentLength, 10) : 320000 + 44,
+              readBuffer = new ArrayBuffer(readBufferSize),
+              readBufferView = new Uint8Array(readBuffer);
+
+        let bytesRead = 0, byte, readBufferPos = 0;
+
+        // TODO errors in underlying Worker must be dealt with here.
+        function flushReadBuffer() {
+            AudioStreamPlayer.enqueueForDecoding(readBuffer.slice(0, readBufferPos));
+            readBufferPos = 0;
+        }
+
+        var started = false;
+
+        // Fill readBuffer and flush when readBufferSize is reached
+        function read() {
+            return reader.read().then(({value, done}) => {
+                if (!started) {
+                    started = true;
+                    setStatus('Buffering audio ...');
+                }
+                if (done) {
+                    flushReadBuffer();
+                    return;
+                } else {
+                    bytesRead += value.byteLength;
+                    audio.style.borderRightWidth = 1250 * (1 - bytesRead/bytesTotal);
+
+                    for (byte of value) {
+                        readBufferView[readBufferPos++] = byte;
+                        if (readBufferPos === readBufferSize) {
+                            flushReadBuffer();
+                        }
+                    }
+
+                    return read();
+                }
+            })
+        }
+
+        return read()
+    }
+
+    audio.addEventListener('click', function(e) {
+        if (audio.classList.contains('ready')) {
+            audio.classList.remove('ready');
+            setStatus('Waiting for WaveNet response ...');
+            fetch('http://demo.jongwook.kim/cgi-bin/post', {
+                method: 'POST',
+                mode: 'cors',
+                cache: 'no-cache',
+                body: self.output
+            }).then(response => {
+                playResponseAsStream(response, 16000 * 2);
+            }).then(_ => {
+                console.log('all stream bytes queued for decoding');
+            }).catch(e => {
+                console.error(e);
+            })
+        }
+    })
     
     async function init() {
         try {
