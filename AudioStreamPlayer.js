@@ -1,9 +1,9 @@
 // Main controller for playing chunks enqueued for decoding.
 const AudioStreamPlayer = (function() {
     const worker = new Worker('worker-decoder.js'),
-          audioCtx = new (window.AudioContext || window.webkitAudioContext)(),
           audioSrcNodes = []; // Used to fix Safari Bug https://github.com/AnthumChris/fetch-stream-audio/issues/1
 
+    var audioCtx = null;
     let totalTimeScheduled = 0,   // time scheduled of all AudioBuffers
         playStartedAt = 0,        // audioContext.currentTime of first scheduled play buffer
         abCreated = 0,            // AudioBuffers created
@@ -31,13 +31,6 @@ const AudioStreamPlayer = (function() {
         setProgressCallback = setProgress;
     }
 
-    // Pause/Resume with space bar
-    // document.onkeydown = event => {
-    //     if (event.code === 'Space') {
-    //         togglePause();
-    //     }
-    // }
-
     function onAudioNodeEnded() {
         audioSrcNodes.shift();
         abEnded++;
@@ -58,11 +51,19 @@ const AudioStreamPlayer = (function() {
 
         if (audioCtx.currentTime > playStartedAt + 10) {
             if (setStatusCallback) setStatusCallback('Complete');
+            playStartedAt = 0;
+            totalTimeScheduled = 0;
+            audioCtx.close();
+            audioCtx = null;
             window.clearInterval(interval);
         }
     }
 
     function schedulePlayback({channelData, length, numberOfChannels, sampleRate}) {
+        if (!audioCtx) {
+            audioCtx = new AudioContext();
+        }
+
         const audioSrc = audioCtx.createBufferSource(),
               audioBuffer = audioCtx.createBuffer(numberOfChannels,length, sampleRate);
 
@@ -91,27 +92,18 @@ const AudioStreamPlayer = (function() {
         if (!playStartedAt) {
             const startDelay = 4.5;
             playStartedAt = audioCtx.currentTime + startDelay;
+            interval = setInterval(updateUI, 50);
         }
 
-        interval = setInterval(updateUI, 50);
         audioSrc.buffer = audioBuffer
         audioSrc.connect(audioCtx.destination);
         audioSrc.start(playStartedAt+totalTimeScheduled);
         totalTimeScheduled += audioBuffer.duration;
     }
 
-    function togglePause() {
-        if(audioCtx.state === 'running') {
-            audioCtx.suspend()
-        } else if(audioCtx.state === 'suspended') {
-            audioCtx.resume()
-        }
-    }
-
     return {
         setCallbacks,
-        enqueueForDecoding,
-        togglePause
+        enqueueForDecoding
     }
 })()
 

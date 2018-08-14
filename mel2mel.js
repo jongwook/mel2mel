@@ -57,6 +57,10 @@ mel2mel = (function(self) {
 
     function setProgress(progress) {
         audio.style.borderLeftWidth = 1250 * progress;
+        if (parseInt(audio.style.borderLeftWidth) + parseInt(audio.style.borderRightWidth) > 1250) {
+            console.error('Wrong widths: left = ' + audio.style.borderLeftWidth + ', right = ' + audio.style.borderRightWidth);
+            audio.style.borderLeftWidth = 1250 - parseInt(audio.style.borderRightWidth);
+        }
     }
 
     AudioStreamPlayer.setCallbacks(setStatus, setProgress);
@@ -121,6 +125,7 @@ mel2mel = (function(self) {
         mel.getContext('2d').clearRect(0, 0, mel.width, mel.height);
         loader.style.display = 'block';
         audio.classList.remove('ready');
+        audio.style.borderLeftWidth = 0;
         audio.style.borderRightWidth = 1250;
         
         setTimeout(() => {
@@ -250,6 +255,10 @@ mel2mel = (function(self) {
                 } else {
                     bytesRead += value.byteLength;
                     audio.style.borderRightWidth = 1250 * (1 - bytesRead/bytesTotal);
+                    if (parseInt(audio.style.borderLeftWidth) + parseInt(audio.style.borderRightWidth) > 1250) {
+                        console.error('Wrong widths: left = ' + audio.style.borderLeftWidth + ', right = ' + audio.style.borderRightWidth);
+                        audio.style.borderLeftWidth = 1250 - parseInt(audio.style.borderRightWidth);
+                    }
 
                     for (byte of value) {
                         readBufferView[readBufferPos++] = byte;
