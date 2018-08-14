@@ -1,0 +1,131 @@
+body {
+    display: grid;
+    font-family: Helvetica, sans-serif;
+    font-size: 9pt;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+a {
+    text-decoration: none;
+    color: hsl(212, 90%, 40%);
+}
+
+a:hover {
+    text-decoration: underline;
+    color: hsl(212, 90%, 40%);
+}
+
+img[align=right] {
+    margin-left: 20px;
+}
+
+img[align=left] {
+    margin-right: 20px;
+}
+
+cite {
+    font-style: normal;
+    color: hsl(212, 90%, 40%);
+    vertical-align: super;
+    font-size: smaller;
+}
+
+#container {
+    margin: auto;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-content: center;
+}
+
+.slide {
+    width: 540px;
+    height: 900px;
+    border: 1px solid #f8f8f8;
+    margin: 10px;
+    padding: 0 20px;
+}
+
+#name {
+    margin-bottom: 10px;
+    font-size: 14pt;
+}
+
+#email {
+    margin: 0;
+    font-family: monospace;
+    font-size: 10pt;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    text-align: center;
+    font-weight: 200;
+}
+
+h1 {
+    margin: 40px 0;
+    font-size: 24pt;
+}
+
+h2 {
+    font-size: 16pt;
+    margin: 20px 0;
+}
+
+h3 {
+    text-align: left;
+    font-weight: bold;
+    font-size: 11pt;
+    margin: 20px 0 15px 0;
+}
+
+h4 {
+    font-family: monospace;
+}
+
+hr {
+    margin: 20px 0 20px 0;
+    border-top: 1px dashed #eee;
+    border-width: 1px 0 0 0;
+}
+
+ul {
+    padding: 0;
+    line-height: 1.5;
+    text-align: justify;
+    list-style: none;
+    counter-reset: number;
+}   
+
+li::before {
+    content: '•';
+    width: 12px;
+    display: inline-block;
+    color: hsl(212, 90%, 40%);
+}
+
+li {
+    margin: 5px 0;
+    counter-increment: number;
+}
+
+#references-header {
+    font-size: 11pt;
+    margin: 0;
+}
+
+#references {
+    font-size: 7pt;
+}
+
+#references > li::before {
+    content: "["counter(number)"]";
+    width: 20px;
+    float: left;
+    display: block;
+    height: 30px;
+}

@@ -1,0 +1,161 @@
+<!doctype html>
+<html>
+<head>
+<title>Neural Music Synthesis</title>
+<link rel='stylesheet' type='text/css' href='poster.css'>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.0-beta/dist/katex.min.css" integrity="sha384-9tPv11A+glH/on/wEu99NVwDPwkMQESOocs/ZGXPoIiLE8MU/qkqUcZ3zzL+6DuH" crossorigin="anonymous">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.10.0-beta/dist/katex.min.js" integrity="sha384-U8Vrjwb8fuHMt6ewaCy8uqeUXv4oitYACKdB0VziCerzt011iQ/0TqlSlv8MReCm" crossorigin="anonymous"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.10.0-beta/dist/contrib/auto-render.min.js" integrity="sha384-aGfk5kvhIq5x1x5YdvCp4upKZYnA8ckafviDpmWEKp4afOZEqOli7gqSnh8I6enH" crossorigin="anonymous" onload="renderMathInElement(document.body);"></script>
+</head>
+<body>
+<div id="container">
+    <div class="slide">
+        <h1>Neural Music Synthesis</h1>
+        <h2 id="name">Jong Wook Kim @ MiQ</h2>
+        <h2 id="email">jongwook@nyu.edu</h2>
+        <hr>
+        <h2>About the MiQ Lab</h2>
+        Understanding music at scale to enhance the Spotify platform. Visit <a href="http://miq.spotify.net">miq.spotify.net</a>!
+        <ul>
+            <li><b>Content Description</b>: rhythm, melody, structure, instrument, language, etc.</li>
+            <li><b>Audio Processing</b>: auto-mixing, karaoke, style transfer, etc.</li>
+            <li><b>Audio Marketplace</b>: skip minimization, originality estimation, etc.</li>
+        </ul>
+        <hr>
+        <h2>Motivation and Background</h2>
+        <ul>
+            <li>We want to go back-and-forth between symbolic and audio domain</li>
+        </ul>
+        <center><img src="images/ae.jpg" width="420px"></center>
+        <ul>
+            <li>End-to-end neural speech synthesis using WaveNet<cite>1</cite> produces near-perfect sound</li>
+            <li>WaveNet is successfully applied in musical note synthesis<cite>3</cite> and music translation<cite>6</cite></li>
+        </ul>
+        <hr>
+        <h2>Dataset</h2>
+        <ul>
+            <li>
+                334 MIDI files of classical piano music crawled from <a href="http://www.piano-midi.de/">www.piano-midi.de</a>
+            </li>
+            <li>
+                Synthesized clean audio for training, using the default soundfont of <a href="https://musescore.org">MuseScore</a>
+            </li>
+            <li>
+                GM Instruments:
+                Grand Piano,
+                Electric Piano,
+                Vibraphone,
+                Church Organ,
+                Acoustic Guitar,
+                Pizzicato Strings,
+                Orchestral Harp,
+                String Ensemble,
+                Trumpet,
+                Synth Lead
+            </li>
+        </ul>
+    </div>
+    <div class="slide">
+        <h2>Architecture</h2>
+        <h3>Overall Architecture</h3>
+        <h3>The Onsets and Frames Salience Representation</h3>
+        <center><img src="images/salience.png" width="300px"></center>
+        <ul>
+            <li>
+                Inspired by the onsets and frames paper<cite>5</cite>, the input has 2 \(\times\) 88 channels,
+                where the first 88 indicate the onset timings and the last 88 indicate the frames.
+            </li>
+        </ul>
+        <img src="images/FiLM.png" align="right" width="120px">
+        <h3>FiLM Layer for Timbre Conditioning</h3>
+        <ul>
+            <li>
+                FiLM layers<cite>4</cite> allow the network to take <b>side information</b>
+            </li>
+            <li>
+                FiLM layers learn the functions \(f\) and \(h\) which take the
+                conditioning input (in our case, the timbre embedding) and 
+                produce the affine transformation parameters:
+            </li>
+        </ul>
+        \[
+            \gamma_{i, c} = f_c ( \mathbf{x}_i ), ~~~~ \beta_{i, c} = h_c ( \mathbf{x}_i ).
+        \]
+        <ul>
+            <li>
+                The features \(\mathbf{F}_{i, c}\) are then transformed element-wise:
+            </li>
+        </ul>
+        \[
+            \mathrm{FiLM}(\mathbf{F}_{i,c} | \gamma_{i, c}, \beta_{i, c}) 
+            = \gamma_{i,c} \mathbf{F}_{i, c} + \beta_{i, c}.
+        \]
+        <h3>Autogressive Music Synthesis using WaveNet</h3>
+        <center><img src="images/wavenet_conv_gif.gif" align="left" width="220px"></center>
+        <ul style="margin-left: 10px">
+            <li>
+                Built real-time audio synthesis using
+                <a href="https://devblogs.nvidia.com/nv-wavenet-gpu-speech-synthesis/">nv-wavenet</a>,
+                NVIDIA's official WaveNet implementation, following Deep Voice<cite>2</cite>.
+            </li>
+            <li>
+                Implemented a CGI server that can run WaveNet inference and stream the audio to the browser in real-time. 
+            </li>
+        </ul>
+    </div>
+    <div class="slide">
+        <h2>Results</h2>
+        <h3>Generated Mel Spectrograms</h3>
+        <center><video src="images/video.mp4" width="440px" loop autoplay></video></center>
+        <h3>Reconstruction Accuracy w.r.t. Loss Functions and Instruments</h3>
+        <center>
+            <img src="images/correlations.svg" width="220px">
+            <img src="images/correlations-instrument.svg" width="220px">
+        </center>
+        <ul>
+            <li>significant degradation at each stage (Mel prediction, WaveNet, µ-law)</li>
+            <li>Reconstruction is generally better at higher frequencies</li>
+            <li>Accuracy depends on both timbre and frequency</li>
+        </ul>
+        <h3>Embedding Space Visualization</h3>
+        <p style="white-space: nowrap; text-align: center;">
+            <img src="images/embedding.png" width="119px" style="position:relative;left:10px;top:-14px;z-index:10;">
+            <img src="images/centroid.svg" width="220px" style="position:relative;left:-30px;z-index:5;">
+            <img src="images/energy.svg" width="220px" style="position:relative;left:-100px;z-index:1;">
+        </p>
+        <h3 style="margin-top: -5px;">Perceptual Tests</h3>
+        TODO: MOS scores
+    </div>
+    <div class="slide">
+        <h2>Conclusions</h2>
+        <ul>
+            <li></li>
+        </ul>
+        <hr>
+        <h2>Future Work</h2>
+        <h3>Upcoming Blog &amp; Paper</h3>
+        <ul>
+            <li>Ablation study on: TODO</li>
+            <li>ClariNet<cite>7</cite></li>
+            <li>More instruments and thus more meaningful timbre learning and better embedding space</li>
+        </ul>
+        <h3>Further Directions</h3>
+        <ul>
+            <li>Synthesizer as a loss function</li>
+            <li>GANs: CycleGAN</li>
+        </ul>
+        <hr>
+        <h2 id="references-header">References</h2>
+        <ul id="references">
+            <li>Oord, A. V. D., Dieleman, S., Zen, H., Simonyan, K., Vinyals, O., Graves, A., ... & Kavukcuoglu, K. (2016). Wavenet: A generative model for raw audio. arXiv preprint arXiv:1609.03499.</li>
+            <li>Arik, S. O., Chrzanowski, M., Coates, A., Diamos, G., Gibiansky, A., Kang, Y., ... & Sengupta, S. (2017). Deep voice: Real-time neural text-to-speech. arXiv preprint arXiv:1702.07825.</li>
+            <li>Engel, J., Resnick, C., Roberts, A., Dieleman, S., Eck, D., Simonyan, K., & Norouzi, M. (2017). Neural audio synthesis of musical notes with wavenet autoencoders. arXiv preprint arXiv:1704.01279.</li>    
+            <li>Perez, E., Strub, F., De Vries, H., Dumoulin, V., & Courville, A. (2017). Film: Visual reasoning with a general conditioning layer. arXiv preprint arXiv:1709.07871.</li>
+            <li>Hawthorne, C., Elsen, E., Song, J., Roberts, A., Simon, I., Raffel, C., ... & Eck, D. (2017). Onsets and frames: Dual-objective piano transcription. arXiv preprint arXiv:1710.11153.</li>
+            <li>Mor, N., Wolf, L., Polyak, A., & Taigman, Y. (2018). A Universal Music Translation Network. arXiv preprint arXiv:1805.07848.</li>
+            <li>Ping, W., Peng, K., & Chen, J. (2018). ClariNet: Parallel Wave Generation in End-to-End Text-to-Speech. arXiv preprint arXiv:1807.07281.</li>
+        </ul>
+    </div>
+</div>
+</body>
+</html>
