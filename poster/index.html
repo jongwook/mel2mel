@@ -14,25 +14,36 @@
         <h2 id="name">Jong Wook Kim @ MiQ</h2>
         <h2 id="email">jongwook@nyu.edu</h2>
         <hr>
-        <h2>About the MiQ Lab</h2>
+        <h3>About the MiQ Lab</h3>
         Understanding music at scale to enhance the Spotify platform. Visit <a href="http://miq.spotify.net">miq.spotify.net</a>!
         <ul>
             <li><b>Content Description</b>: rhythm, melody, structure, instrument, language, etc.</li>
             <li><b>Audio Processing</b>: auto-mixing, karaoke, style transfer, etc.</li>
             <li><b>Audio Marketplace</b>: skip minimization, originality estimation, etc.</li>
         </ul>
-        <hr>
-        <h2>Motivation and Background</h2>
+        <h3>Motivation and Background</h3>
         <ul>
-            <li>We want to go back-and-forth between symbolic and audio domain</li>
+            <li>We want to be able to convert audio into disentangled semantic information and vice versa:</li>
         </ul>
         <center><img src="images/ae.jpg" width="420px"></center>
         <ul>
             <li>End-to-end neural speech synthesis using WaveNet<cite>1</cite> produces near-perfect sound</li>
             <li>WaveNet is successfully applied in musical note synthesis<cite>3</cite> and music translation<cite>6</cite></li>
         </ul>
-        <hr>
-        <h2>Dataset</h2>
+
+        <h3>Autogressive Music Synthesis using WaveNet</h3>
+        <center><img src="images/wavenet_conv_gif.gif" align="left" width="220px"></center>
+        <ul style="margin-left: 10px">
+            <li>
+                Built real-time audio synthesis using
+                <a href="https://devblogs.nvidia.com/nv-wavenet-gpu-speech-synthesis/">nv-wavenet</a>,
+                NVIDIA's official WaveNet implementation, following Deep Voice<cite>2</cite>.
+            </li>
+            <li>
+                Implemented a CGI server that can run WaveNet inference and stream the audio to the browser in real-time. 
+            </li>
+        </ul>
+        <h3>Dataset</h3>
         <ul>
             <li>
                 334 MIDI files of classical piano music crawled from <a href="http://www.piano-midi.de/">www.piano-midi.de</a>
@@ -40,7 +51,7 @@
             <li>
                 Synthesized clean audio for training, using the default soundfont of <a href="https://musescore.org">MuseScore</a>
             </li>
-            <li>
+            <!--<li>
                 GM Instruments:
                 Grand Piano,
                 Electric Piano,
@@ -52,18 +63,25 @@
                 String Ensemble,
                 Trumpet,
                 Synth Lead
-            </li>
+            </li>-->
         </ul>
     </div>
     <div class="slide">
-        <h2>Architecture</h2>
+        <h2>Methodology</h2>
         <h3>Overall Architecture</h3>
+        <center><img src="images/architecture.svg" width="500px"></center>
+        <ul>
+            <li>MIDI data and instrument information are combined to predict 80-dim Mel spectrogram</li>
+            <li>WaveNet synthesizes music, by conditioning on the predicted Mel spectrogram </li>
+        </ul>
         <h3>The Onsets and Frames Salience Representation</h3>
-        <center><img src="images/salience.png" width="300px"></center>
         <ul>
             <li>
                 Inspired by the onsets and frames paper<cite>5</cite>, the input has 2 \(\times\) 88 channels,
                 where the first 88 indicate the onset timings and the last 88 indicate the frames.
+            </li>
+            <li>
+                The input matrix is sparse, and the nonzero elements contain the MIDI velocity.
             </li>
         </ul>
         <img src="images/FiLM.png" align="right" width="120px">
@@ -90,27 +108,15 @@
             \mathrm{FiLM}(\mathbf{F}_{i,c} | \gamma_{i, c}, \beta_{i, c}) 
             = \gamma_{i,c} \mathbf{F}_{i, c} + \beta_{i, c}.
         \]
-        <h3>Autogressive Music Synthesis using WaveNet</h3>
-        <center><img src="images/wavenet_conv_gif.gif" align="left" width="220px"></center>
-        <ul style="margin-left: 10px">
-            <li>
-                Built real-time audio synthesis using
-                <a href="https://devblogs.nvidia.com/nv-wavenet-gpu-speech-synthesis/">nv-wavenet</a>,
-                NVIDIA's official WaveNet implementation, following Deep Voice<cite>2</cite>.
-            </li>
-            <li>
-                Implemented a CGI server that can run WaveNet inference and stream the audio to the browser in real-time. 
-            </li>
-        </ul>
     </div>
     <div class="slide">
         <h2>Results</h2>
         <h3>Generated Mel Spectrograms</h3>
-        <center><video src="images/video.mp4" width="440px" loop autoplay></video></center>
+        <center><video src="images/video.mp4" width="480px" loop autoplay></video></center>
         <h3>Reconstruction Accuracy w.r.t. Loss Functions and Instruments</h3>
         <center>
-            <img src="images/correlations.svg" width="220px">
-            <img src="images/correlations-instrument.svg" width="220px">
+            <img src="images/correlations.svg" width="240px">
+            <img src="images/correlations-instrument.svg" width="240px">
         </center>
         <ul>
             <li>significant degradation at each stage (Mel prediction, WaveNet, µ-law)</li>
@@ -119,30 +125,63 @@
         </ul>
         <h3>Embedding Space Visualization</h3>
         <center>
-            <img src="images/centroid.svg" width="200px">
-            &nbsp;&nbsp;&nbsp;&nbsp;
-            <img src="images/energy.svg" width="200px">
+            <img src="images/centroid.svg" width="240px">
+            <img src="images/energy.svg" width="240px">
         </center>
-        <h3>Perceptual Tests</h3>
-        TODO: MOS scores
     </div>
     <div class="slide">
+        <h3>Mean Opinion Scores of Synthesis</h3>
+        <center>
+            <table border cellspaing="0" cellpadding="0">
+                <thead>
+                    <tr>
+                        <th>Condition</th> 
+                        <th>Scores \(\pm\) SEM</th>
+                        <th>Condition</th> 
+                        <th>Scores \(\pm\) SEM</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Original</td>
+                        <td>\(4.295 \pm 0.043 \)</td>
+                        <td>tanh-log-abs MSE</td>
+                        <td>\(3.165 \pm 0.058 \)</td>
+                    </tr>
+                    <tr>
+                        <td>mu-law Only</td>
+                        <td>\(3.875 \pm 0.051 \)</td>
+                        <td>log-abs MSE</td>
+                        <td>\(3.006 \pm 0.058 \)</td>
+                    </tr>
+                    <tr>
+                        <td>Original Mel</td>
+                        <td>\(3.356 \pm 0.052 \)</td>
+                        <td>abs MSE</td>
+                        <td>\( 2.738 \pm 0.060 \)</td>
+                    </tr>
+                </tbody>
+            </table>
+        </center>
+        <hr>
         <h2>Conclusions</h2>
         <ul>
-            <li></li>
+            <li>Built a model which combines RNN and WaveNet to synthesize polyphonic music from MIDI score and instrument information.</li>
+            <li>Can interpolate between instruments in the embedding space, making interesting sounds</li>
+            <li>The embedding space captures the distribution of timbre, such as spectral centroid and mean energy</li>
         </ul>
         <hr>
         <h2>Future Work</h2>
-        <h3>Upcoming Blog &amp; Paper</h3>
+        <b>Upcoming Blog &amp; Paper</b>
         <ul>
-            <li>Ablation study on: TODO</li>
-            <li>ClariNet<cite>7</cite></li>
-            <li>More instruments and thus more meaningful timbre learning and better embedding space</li>
+            <li>Ablation study for architecutre variations: number of FiLM and Conv layers, activations, etc.</li>
+            <li>Embedding space visualization for 100+ instruments</li>
+            <li>ClariNet<cite>7</cite>: continuous and paralllelizable WaveNet based on Gaussian IAF</li>
         </ul>
-        <h3>Further Directions</h3>
+        <b>Further Research Directions</b>
         <ul>
-            <li>Synthesizer as a loss function</li>
-            <li>GANs: CycleGAN</li>
+            <li>We now have a differentiable loss function that </li>
+            <li>Using GAN to generate higher-dimensional representations for better synthesis</li>
         </ul>
         <hr>
         <h2 id="references-header">References</h2>

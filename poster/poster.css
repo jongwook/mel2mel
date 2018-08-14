@@ -26,6 +26,16 @@ img[align=left] {
     margin-right: 20px;
 }
 
+table {
+    border: 1px solid #333;
+    border-collapse: collapse;
+}
+
+th, td {
+    padding: 3px 10px;
+    text-align: center;
+}
+
 cite {
     font-style: normal;
     color: hsl(212, 90%, 40%);
