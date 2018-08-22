@@ -45,19 +45,10 @@ cite {
 
 #container {
     margin: auto;
-    display: flex;
-    flex-direction: row;
-    flex-wrap: wrap;
     justify-content: center;
     align-content: center;
-}
 
-.slide {
     width: 540px;
-    height: 900px;
-    border: 1px solid #f8f8f8;
-    margin: 10px;
-    padding: 0 20px;
 }
 
 #name {
@@ -83,14 +74,14 @@ h1 {
 
 h2 {
     font-size: 16pt;
-    margin: 20px 0;
+    margin: 50px 0 20px 0;
 }
 
 h3 {
     text-align: left;
     font-weight: bold;
     font-size: 11pt;
-    margin: 20px 0 15px 0;
+    margin: 30px 0 15px 0;
 }
 
 h4 {
