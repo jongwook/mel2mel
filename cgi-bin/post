@@ -1,0 +1,76 @@
+#! /home/jongwook/miniconda3/bin/python
+import os
+import sys
+import numpy as np
+import math
+
+import cgi
+import cgitb
+
+cgitb.enable()
+
+sys.stdout.buffer.write(b"Content-Type: audio/wav\n")
+sys.stdout.buffer.write(b"Access-Control-Allow-Origin: *\n")
+sys.stdout.buffer.write(b"\n")
+sys.stdout.buffer.flush()
+
+buf = sys.stdin.buffer.read()
+array = np.frombuffer(buf, dtype=np.float32)
+mel = array.reshape([-1, 80]).transpose()
+
+SAMPLE_RATE = 16000
+STEP_SIZE = 128
+nframes = mel.shape[1] * STEP_SIZE
+
+import torch
+import wave
+
+sys.path.insert(0, '/home/jongwook/shaper')
+import utils
+
+
+def synthesize(features, implementation=0, split_size=25, verbose=False):
+    """Perform the autogressive audio synthesis using the nv_wavenet extension"""
+    from nv_wavenet import NVWaveNet
+
+    rf = model.upsample1.kernel_size[0] * model.upsample2.stride[0] + model.upsample2.kernel_size[0]
+    step_size = model.upsample1.stride[0] * model.upsample2.stride[0]
+    padding = int(math.ceil(rf / 2 / step_size))
+    length = features.shape[-1]
+
+    with NVWaveNet(**model.export_weights()) as wavenet:
+        splits = range(0, length, split_size)
+        if verbose:
+            splits = tqdm(splits)
+
+        for left in splits:
+            right = min(left + split_size, length)
+            padded_left = max(left - padding, 0)
+            padded_right = min(right + padding, length)
+            cond_input = model.get_cond_input(features[None, :, padded_left:padded_right].cuda())
+
+            cond_input_length = cond_input.shape[-1]
+            cutoff_left = (left - padded_left) * step_size
+            cutoff_right = (padded_right - right) * step_size
+            cond_input = cond_input[:, :, :, cutoff_left:cond_input_length-cutoff_right]
+
+            synthesized = wavenet.infer(cond_input, implementation)
+            yield utils.mu_law_decode(synthesized.cpu()).squeeze(0)
+
+
+with wave.open(sys.stdout.buffer, 'wb') as out:
+    out.setnchannels(1)
+    out.setsampwidth(2)
+    out.setframerate(SAMPLE_RATE)
+    out.setnframes(nframes)
+
+    sys.stdout.buffer.flush()
+
+    model = torch.load('wavenet.pt')
+    mel = torch.from_numpy(mel)
+
+    for chunk in synthesize(mel):
+        data = (32767 * chunk.numpy()).astype(np.int16).tobytes()
+        out.writeframesraw(data)
+        sys.stdout.buffer.flush()
+
